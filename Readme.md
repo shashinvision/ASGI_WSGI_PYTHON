@@ -176,12 +176,18 @@ async def read_root():
 uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
-O bien:
+**O también puedes agregar este codigo a tu archivo `app.py`:**
 
 ```python
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+```
+
+**Ejecutar desde terminal:**
+
+```bash
+python app.py
 ```
 
 ---
