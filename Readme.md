@@ -1,19 +1,19 @@
 # WSGI y ASGI en Python: Guía Práctica con Ejemplos
 
-Este documento proporciona una guía práctica sobre el uso de WSGI y ASGI en Python, junto con ejemplos de implementación en frameworks populares como Flask, Starlette, Django y FastAPI.
+Este documento incluye una guía práctica sobre el uso de WSGI y ASGI en Python, con ejemplos funcionales en frameworks populares como Flask, Starlette, Django y FastAPI.
 
 ## ¿Qué son WSGI y ASGI?
 
-- **WSGI (Web Server Gateway Interface):** Es una interfaz estándar para la comunicación entre servidores web y aplicaciones web en Python. Define un protocolo simple para que el servidor web y la aplicación web puedan intercambiar información.
-- **ASGI (Asynchronous Server Gateway Interface):** Es una extensión de WSGI que permite a las aplicaciones web Python utilizar características asíncronas, como la concurrencia, para mejorar el rendimiento y la escalabilidad.
+- **WSGI (Web Server Gateway Interface):** Es una interfaz estándar para la comunicación entre servidores web y aplicaciones web en Python. Define un protocolo simple para el intercambio de información entre ambos.
+- **ASGI (Asynchronous Server Gateway Interface):** Es una extensión moderna de WSGI que permite el uso de características asíncronas (como `async/await`) para mejorar el rendimiento y la escalabilidad.
+
+---
 
 ## WSGI
 
-WSGI es el estándar más antiguo y sigue siendo relevante para aplicaciones web más simples o aquellas que no necesitan las características asíncronas de ASGI.
+WSGI es el estándar más antiguo, ideal para aplicaciones web más simples o que no requieren asincronía.
 
-### Ejemplo con Flask
-
-Flask es un microframework web que utiliza WSGI.
+### Ejemplo con Flask (WSGI)
 
 ```python
 from flask import Flask
@@ -28,13 +28,13 @@ if __name__ == "__main__":
     app.run(debug=True)
 ```
 
-**Ejecución desde la terminal:**
+**Ejecutar en terminal:**
 
 ```bash
 python app.py
 ```
 
-**O de la siguiente forma**
+### Ejemplo más completo con Flask
 
 ```python
 from flask import Flask, render_template, url_for, request
@@ -43,14 +43,12 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-
 @app.route("/", methods=["GET", "POST"])
 @app.route("/<language>", methods=["GET"])
 def index(language="spanish"):
     if request.method == "GET":
         icon = url_for("static", filename="imgs/perfil.ico")
         current_year = datetime.now().year
-
         set_language = spanish if language == "spanish" else english
 
         return render_template(
@@ -63,107 +61,81 @@ def index(language="spanish"):
     return "Invalid request method", 400
 ```
 
-**Ejecución desde la terminal:**
+**Ejecutar en terminal:**
 
 ```bash
 flask --app app run --host=0.0.0.0 --debug --port=5002
 ```
 
+### Flask usando Waitress (servidor WSGI)
+
+```python
+from waitress import serve
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route("/")
+def hello():
+    return "¡Hola desde Flask con Waitress!"
+
+if __name__ == "__main__":
+    serve(app, host="0.0.0.0", port=5000)
+```
+
+**Ejecutar en terminal:**
+
+```bash
+waitress-serve --host=0.0.0.0 --port=5000 app:app
+```
+
+---
+
 ## ASGI
 
-ASGI es más moderno y adecuado para aplicaciones web que necesitan un alto rendimiento y escalabilidad.
+ASGI es el estándar moderno para aplicaciones que requieren alto rendimiento, asincronía y concurrencia.
 
 ### Ejemplo con Starlette
 
-Starlette es un framework ASGI ligero que se basa en Starlette.
-
 ```python
 from starlette.applications import Starlette
 from starlette.routing import Route
 from starlette.responses import HTMLResponse
 
-app = Starlette([
-    Route("/hello", HTMLResponse("¡Hola, mundo!"))
-])
-
-# Para ejecutarlo, necesitas un servidor ASGI como uvicorn
-# uvicorn main:app --host 0.0.0.0 --port 8000
-```
-
-**Ejecución desde la terminal:**
-
-```bash
-uvicorn main:app --host 0.0.0.0 --port 8000
-```
-
-**O también puedes usar el siguiente código para ejecutarlo directamente:**
-
-```python
-from starlette.applications import Starlette
-from starlette.routing import Route
-from starlette.responses import HTMLResponse
+async def hello(request):
+    return HTMLResponse("\u00a1Hola, mundo!")
 
 app = Starlette(
-    [
-        Route("/hello", HTMLResponse("¡Hola, mundo!"))
+    routes=[
+        Route("/hello", hello)
     ]
 )
-
-if __name__ == "__main__":
-    app.run(debug=True)
 ```
 
-### Ejemplo con Django
-
-Django es un framework web completo que utiliza ASGI.
-
-```python
-from asgiref.sync import sync_to_async
-from asgiref.utils import sync
-from django.core import views
-from django.urls import path
-from django.conf import settings
-
-# ... (Código de configuración de Django) ...
-
-urlpatterns = [
-    path('hello/', views.hello, name='hello'),
-]
-
-# Para ejecutarlo, necesitas un servidor ASGI como uvicorn
-# uvicorn main:app --host 0.0.0.0 --port 8000
-```
-
-**Ejecución desde la terminal:**
+**Ejecutar con uvicorn:**
 
 ```bash
 uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
-**O también puedes usar el siguiente código para ejecutarlo directamente:**
+### Ejemplo con Django (ASGI desde v3.0)
 
-```python
-from django.core import handlers
-from django.urls import path
-from starlette.routing import StarletteRoute
-from starlette.responses import HTMLResponse
+Django ofrece soporte ASGI a partir de la versión 3.0 a través del archivo `asgi.py`.
 
-def django_starlette_app(debug=True):
-    app = Starlette(
-        [
-            StarletteRoute("/hello", HTMLResponse("¡Hola, mundo!"))
-        ]
-    )
-    return app
+**Ejecutar con Daphne o Uvicorn:**
 
-if __name__ == "__main__":
-    django_starlette_app()
+```bash
+# Con Daphne
+pip install daphne
+
+daphne myproject.asgi:application
+
+# O con uvicorn
+uvicorn myproject.asgi:application --host 0.0.0.0 --port 8000
 ```
 
 ### Ejemplo con FastAPI
 
-FastAPI es un framework moderno y de alto rendimiento para construir APIs con Python, utilizando ASGI.
-
 ```python
 from fastapi import FastAPI
 
@@ -172,40 +144,41 @@ app = FastAPI()
 @app.get("/")
 async def read_root():
     return {"message": "¡Hola, mundo!"}
-
-# Para ejecutarlo, necesitas un servidor ASGI como uvicorn
-# uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
-**Ejecución desde la terminal:**
+**Ejecutar con uvicorn:**
 
 ```bash
 uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
-**O también puedes usar el siguiente código para ejecutarlo directamente:**
+O bien:
 
 ```python
-from fastapi import FastAPI
-
-app = FastAPI()
-
-@app.get("/")
-async def read_root():
-    return {"message": "¡Hola, mundo!"}
-
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
 ```
 
-- **Flask:** Flask soporta WSGI de forma nativa. Puedes usar servidores WSGI como Gunicorn o uWSGI para desplegar aplicaciones Flask.
-- **FastAPI:** FastAPI es un framework web moderno para construir APIs. Utiliza ASGI de forma nativa y es ideal para aplicaciones que requieren alto rendimiento.
-- **Starlette:** Starlette es un framework ASGI que proporciona las bases para construir aplicaciones web asíncronas.
-- **Django:** Django originalmente utilizaba WSGI, pero ahora también soporta ASGI a través de su servidor ASGI integrado y otros servidores ASGI.
+---
+
+## Comparación entre Frameworks
+
+- **Flask:** Nativamente usa WSGI. Puedes desplegarlo con Gunicorn, uWSGI o Waitress.
+- **FastAPI:** Usa ASGI de forma nativa. Ideal para APIs modernas y de alto rendimiento.
+- **Starlette:** Framework ASGI minimalista y flexible.
+- **Django:** Clásico framework WSGI, ahora compatible también con ASGI (desde v3.0).
+
+---
 
 ## Consideraciones Finales
 
-- **Rendimiento:** ASGI puede mejorar significativamente el rendimiento de las aplicaciones web Python, especialmente aquellas que realizan operaciones de E/S no bloqueantes.
-- **Asincronía:** Utiliza las características asíncronas de Python (async/await) para aprovechar al máximo las ventajas de ASGI.
-- **Servidores:** Elige un servidor ASGI que se adapte a tus necesidades. Algunos servidores populares incluyen Uvicorn, Hypercorn y Daphne.
+- **Rendimiento:** ASGI ofrece mejor rendimiento en tareas de E/S no bloqueantes.
+- **Asincronía:** Utiliza `async/await` para sacar provecho de ASGI.
+- **Compatibilidad:** Para aplicaciones simples, WSGI sigue siendo una buena opción.
+- **Servidores ASGI populares:** Uvicorn, Daphne, Hypercorn.
+- **Migración:** Cambiar de WSGI a ASGI puede requerir ajustes en configuraciones, middlewares y vistas.
+
+---
+
+Con esta guía tienes una base sólida para comprender y usar WSGI y ASGI según tus necesidades.
