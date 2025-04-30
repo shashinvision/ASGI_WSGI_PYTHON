@@ -92,8 +92,6 @@ python app.py
 
 **O también:**
 
-````bash
-
 ```python
 from waitress import serve
 from flask import Flask
@@ -105,7 +103,7 @@ def hello():
     return "¡Hola desde Flask con Waitress!"
 
 
-````
+```
 
 **Ejecutar en terminal:**
 
