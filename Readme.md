@@ -81,7 +81,31 @@ def hello():
 
 if __name__ == "__main__":
     serve(app, host="0.0.0.0", port=5000)
+
 ```
+
+**Ejecutar en terminal:**
+
+```bash
+python app.py
+```
+
+**O también:**
+
+````bash
+
+```python
+from waitress import serve
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route("/")
+def hello():
+    return "¡Hola desde Flask con Waitress!"
+
+
+````
 
 **Ejecutar en terminal:**
 
